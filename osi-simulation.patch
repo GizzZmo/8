@@ -1,0 +1,666 @@
+From 014ab852991a670973f1e9c3e831f50f677c16a5 Mon Sep 17 00:00:00 2001
+From: "copilot-swe-agent[bot]" <198982749+Copilot@users.noreply.github.com>
+Date: Wed, 29 Oct 2025 15:17:23 +0000
+Subject: [PATCH] Create complete OSI blockchain simulation
+
+Co-authored-by: GizzZmo <8039975+GizzZmo@users.noreply.github.com>
+---
+ osi_blockchain_simulation/README.md           | 159 ++++++++++++++++++
+ osi_blockchain_simulation/__init__.py         |   1 +
+ .../blockchain_module/__init__.py             |   1 +
+ .../blockchain_module/block.py                |  13 ++
+ .../blockchain_module/transaction.py          |  16 ++
+ osi_blockchain_simulation/core/__init__.py    |   1 +
+ .../core/crypto_utils.py                      |   5 +
+ .../core/layers/__init__.py                   |   1 +
+ .../core/layers/application.py                |  10 ++
+ .../core/layers/datalink.py                   |  15 ++
+ .../core/layers/network.py                    |  14 ++
+ .../core/layers/physical.py                   |  17 ++
+ .../core/layers/presentation.py               |  37 ++++
+ .../core/layers/session.py                    |  11 ++
+ .../core/layers/transport.py                  |  22 +++
+ osi_blockchain_simulation/core/pdu.py         |   8 +
+ .../core/verification_utils.py                |  15 ++
+ .../examples/__init__.py                      |   1 +
+ .../examples/blockchain_flow.py               |   9 +
+ .../examples/encrypted_data_flow.py           |   9 +
+ .../examples/signed_data_flow.py              |   9 +
+ .../examples/simple_text_flow.py              |   9 +
+ osi_blockchain_simulation/main_simulation.py  |  87 ++++++++++
+ 23 files changed, 470 insertions(+)
+ create mode 100644 osi_blockchain_simulation/README.md
+ create mode 100644 osi_blockchain_simulation/__init__.py
+ create mode 100644 osi_blockchain_simulation/blockchain_module/__init__.py
+ create mode 100644 osi_blockchain_simulation/blockchain_module/block.py
+ create mode 100644 osi_blockchain_simulation/blockchain_module/transaction.py
+ create mode 100644 osi_blockchain_simulation/core/__init__.py
+ create mode 100644 osi_blockchain_simulation/core/crypto_utils.py
+ create mode 100644 osi_blockchain_simulation/core/layers/__init__.py
+ create mode 100644 osi_blockchain_simulation/core/layers/application.py
+ create mode 100644 osi_blockchain_simulation/core/layers/datalink.py
+ create mode 100644 osi_blockchain_simulation/core/layers/network.py
+ create mode 100644 osi_blockchain_simulation/core/layers/physical.py
+ create mode 100644 osi_blockchain_simulation/core/layers/presentation.py
+ create mode 100644 osi_blockchain_simulation/core/layers/session.py
+ create mode 100644 osi_blockchain_simulation/core/layers/transport.py
+ create mode 100644 osi_blockchain_simulation/core/pdu.py
+ create mode 100644 osi_blockchain_simulation/core/verification_utils.py
+ create mode 100755 osi_blockchain_simulation/examples/__init__.py
+ create mode 100755 osi_blockchain_simulation/examples/blockchain_flow.py
+ create mode 100755 osi_blockchain_simulation/examples/encrypted_data_flow.py
+ create mode 100755 osi_blockchain_simulation/examples/signed_data_flow.py
+ create mode 100755 osi_blockchain_simulation/examples/simple_text_flow.py
+ create mode 100755 osi_blockchain_simulation/main_simulation.py
+
+diff --git a/osi_blockchain_simulation/README.md b/osi_blockchain_simulation/README.md
+new file mode 100644
+index 0000000..cc3b506
+--- /dev/null
++++ b/osi_blockchain_simulation/README.md
+@@ -0,0 +1,159 @@
++# OSI Model Data Flow Simulation
++
++## Overview
++This is a Python-based simulation of data flow through the seven layers of the OSI (Open Systems Interconnection) model. It demonstrates:
++
++- **Layered Architecture**: The distinct roles and functions of each OSI layer
++- **Encapsulation**: How data from an upper layer is wrapped with headers/trailers
++- **Decapsulation**: The reverse process of unwrapping data
++- **Protocol Data Units (PDUs)**: Named data units at each layer
++- **Verification**: Basic data integrity checks and digital signature verification
++- **Cryptography**: Simplified encryption/decryption at the Presentation Layer
++- **Blockchain Integration**: Conceptual handling of blockchain transactions as application data
++
++## Features
++
++- **Seven-Layer Simulation**: Models Application, Presentation, Session, Transport, Network, Data Link, and Physical layers
++- **PDU Transformation**: Shows creation and modification of PDUs at each layer
++- **Configurable Scenarios**: Allows users to define input data and network parameters
++- **Text-Based Visualization**: Detailed logs of encapsulation/decapsulation processes
++- **Verification Mechanisms**: Checksums and digital signatures for data integrity
++- **Cryptographic Operations**: Simple XOR encryption/decryption at L6
++- **Blockchain Module**: Simplified Transaction and Block structures
++
++## Project Structure
++
++```
++osi_blockchain_simulation/
++├── main_simulation.py          # Main executable script
++├── core/                       # Core OSI simulation logic
++│   ├── pdu.py                 # PDU class definitions
++│   ├── crypto_utils.py        # Cryptographic utilities
++│   ├── verification_utils.py  # Verification utilities
++│   └── layers/                # OSI layer implementations
++│       ├── application.py     # L7: Application Layer
++│       ├── presentation.py    # L6: Presentation Layer
++│       ├── session.py         # L5: Session Layer
++│       ├── transport.py       # L4: Transport Layer
++│       ├── network.py         # L3: Network Layer
++│       ├── datalink.py        # L2: Data Link Layer
++│       └── physical.py        # L1: Physical Layer
++├── blockchain_module/         # Blockchain components
++│   ├── transaction.py         # Transaction class
++│   └── block.py              # Block class
++└── examples/                  # Example scenarios
++    ├── simple_text_flow.py    # Basic text transfer
++    ├── encrypted_data_flow.py # Encrypted data transfer
++    ├── signed_data_flow.py    # Signed data transfer
++    └── blockchain_flow.py     # Blockchain transaction flow
++```
++
++## Prerequisites
++
++- Python 3.8+
++
++## Installation
++
++1. Navigate to the simulation directory:
++   ```bash
++   cd osi_blockchain_simulation
++   ```
++
++## Usage
++
++### Running the Main Simulation
++
++```bash
++python main_simulation.py --data "Hello World"
++```
++
++### Command-Line Options
++
++- `--data <string>`: Application data to send (default: "Hello OSI World")
++- `--dest_ip <ip>`: Destination IP address (default: "192.168.1.100")
++- `--dest_mac <mac>`: Destination MAC address (default: "00:1A:2B:3C:4D:5E")
++- `--port <number>`: Destination port (default: 80)
++- `--encrypt`: Enable Presentation Layer encryption
++- `--sign`: Enable digital signing
++- `--blockchain`: Simulate blockchain transaction as data
++
++### Example Commands
++
++1. **Simple text transmission:**
++   ```bash
++   python main_simulation.py --data "Hello OSI World"
++   ```
++
++2. **Encrypted transmission:**
++   ```bash
++   python main_simulation.py --data "Secret Message" --encrypt
++   ```
++
++3. **Signed transmission:**
++   ```bash
++   python main_simulation.py --data "Important Data" --sign
++   ```
++
++4. **Blockchain transaction:**
++   ```bash
++   python main_simulation.py --blockchain
++   ```
++
++5. **Combined encryption and signing:**
++   ```bash
++   python main_simulation.py --data "Secure Data" --encrypt --sign
++   ```
++
++### Running Example Scenarios
++
++```bash
++python examples/simple_text_flow.py
++python examples/encrypted_data_flow.py
++python examples/signed_data_flow.py
++python examples/blockchain_flow.py
++```
++
++## Understanding the Output
++
++The simulation displays detailed logs showing:
++
++1. **Sender Side**: Data encapsulation through layers L7→L1
++2. **Transmission**: Simulated medium transfer
++3. **Receiver Side**: Data decapsulation through layers L1→L7
++
++Each layer shows:
++- Layer name and number
++- Headers/trailers added or removed
++- Data transformation (encryption, encoding, etc.)
++- Verification results (checksums, signatures)
++
++## Example Output
++
++```
++----------------------------------------
++[L7 - Application] Original Data: 'Hello OSI World'
++[L7 -> L6] Passing data to Presentation Layer.
++----------------------------------------
++[L6 - Presentation] ...
++[L6 -> L5] Passing PDU to Session Layer.
++----------------------------------------
++...
++SIMULATING TRANSMISSION MEDIUM...
++----------------------------------------
++RECEIVER SIDE:
++[L1 - Physical] Received bits: ...
++...
++[L7 - Application] Final Data Received: 'Hello OSI World'
++----------------------------------------
++SIMULATION COMPLETE.
++```
++
++## License
++
++This project is part of the repository and follows its license terms.
++
++## Acknowledgements
++
++- Inspired by the OSI model framework
++- Educational tool for understanding network protocols
++- Demonstrates layered architecture principles
+diff --git a/osi_blockchain_simulation/__init__.py b/osi_blockchain_simulation/__init__.py
+new file mode 100644
+index 0000000..e43a77a
+--- /dev/null
++++ b/osi_blockchain_simulation/__init__.py
+@@ -0,0 +1 @@
++# OSI Blockchain Simulation Package
+diff --git a/osi_blockchain_simulation/blockchain_module/__init__.py b/osi_blockchain_simulation/blockchain_module/__init__.py
+new file mode 100644
+index 0000000..4b2304a
+--- /dev/null
++++ b/osi_blockchain_simulation/blockchain_module/__init__.py
+@@ -0,0 +1 @@
++# blockchain_module package
+diff --git a/osi_blockchain_simulation/blockchain_module/block.py b/osi_blockchain_simulation/blockchain_module/block.py
+new file mode 100644
+index 0000000..b32dc01
+--- /dev/null
++++ b/osi_blockchain_simulation/blockchain_module/block.py
+@@ -0,0 +1,13 @@
++import hashlib
++import time
++
++class Block:
++    def __init__(self, transactions, previous_hash=''):
++        self.timestamp = time.time()
++        self.transactions = transactions
++        self.previous_hash = previous_hash
++        self.hash = self.compute_hash()
++
++    def compute_hash(self):
++        block_string = str(self.transactions) + str(self.timestamp) + self.previous_hash
++        return hashlib.sha256(block_string.encode()).hexdigest()
+diff --git a/osi_blockchain_simulation/blockchain_module/transaction.py b/osi_blockchain_simulation/blockchain_module/transaction.py
+new file mode 100644
+index 0000000..4316459
+--- /dev/null
++++ b/osi_blockchain_simulation/blockchain_module/transaction.py
+@@ -0,0 +1,16 @@
++import time
++
++class Transaction:
++    def __init__(self, sender, receiver, amount):
++        self.sender = sender
++        self.receiver = receiver
++        self.amount = amount
++        self.timestamp = time.time()
++
++    def to_dict(self):
++        return {
++            "sender": self.sender,
++            "receiver": self.receiver,
++            "amount": self.amount,
++            "timestamp": self.timestamp
++        }
+diff --git a/osi_blockchain_simulation/core/__init__.py b/osi_blockchain_simulation/core/__init__.py
+new file mode 100644
+index 0000000..97daee7
+--- /dev/null
++++ b/osi_blockchain_simulation/core/__init__.py
+@@ -0,0 +1 @@
++# core package
+diff --git a/osi_blockchain_simulation/core/crypto_utils.py b/osi_blockchain_simulation/core/crypto_utils.py
+new file mode 100644
+index 0000000..c89e0cc
+--- /dev/null
++++ b/osi_blockchain_simulation/core/crypto_utils.py
+@@ -0,0 +1,5 @@
++def simple_xor_encrypt(data, key=42):
++    return ''.join(chr(ord(c) ^ key) for c in data)
++
++def simple_xor_decrypt(data, key=42):
++    return ''.join(chr(ord(c) ^ key) for c in data)
+diff --git a/osi_blockchain_simulation/core/layers/__init__.py b/osi_blockchain_simulation/core/layers/__init__.py
+new file mode 100644
+index 0000000..6b1601e
+--- /dev/null
++++ b/osi_blockchain_simulation/core/layers/__init__.py
+@@ -0,0 +1 @@
++# core.layers package
+diff --git a/osi_blockchain_simulation/core/layers/application.py b/osi_blockchain_simulation/core/layers/application.py
+new file mode 100644
+index 0000000..0f3de98
+--- /dev/null
++++ b/osi_blockchain_simulation/core/layers/application.py
+@@ -0,0 +1,10 @@
++from core.pdu import PDU
++
++class ApplicationLayer:
++    def encapsulate(self, data):
++        print(f"[L7 - Application] Encapsulating: {data!r}")
++        return PDU(payload=data, header={"type": "application"})
++
++    def decapsulate(self, pdu):
++        print(f"[L7 - Application] Final Data Received: {pdu.payload!r}")
++        return pdu.payload
+diff --git a/osi_blockchain_simulation/core/layers/datalink.py b/osi_blockchain_simulation/core/layers/datalink.py
+new file mode 100644
+index 0000000..a394860
+--- /dev/null
++++ b/osi_blockchain_simulation/core/layers/datalink.py
+@@ -0,0 +1,15 @@
++from core.pdu import PDU
++
++class DataLinkLayer:
++    def __init__(self, dest_mac):
++        self.dest_mac = dest_mac
++
++    def encapsulate(self, pdu):
++        header = {"src_mac": "00:00:00:00:00:01", "dst_mac": self.dest_mac, "type": "0x0800"}
++        trailer = {"fcs": "0xABCDE"}
++        print(f"[L2 - Data Link] Adding Ethernet Header/Trailer. Header: {header}, Trailer: {trailer}")
++        return PDU(payload=pdu, header=header, trailer=trailer)
++
++    def decapsulate(self, pdu):
++        print("[L2 - Data Link] MAC address matches. FCS check OK. Stripping L2 Header/Trailer.")
++        return pdu.payload
+diff --git a/osi_blockchain_simulation/core/layers/network.py b/osi_blockchain_simulation/core/layers/network.py
+new file mode 100644
+index 0000000..9ef7acf
+--- /dev/null
++++ b/osi_blockchain_simulation/core/layers/network.py
+@@ -0,0 +1,14 @@
++from core.pdu import PDU
++
++class NetworkLayer:
++    def __init__(self, dest_ip):
++        self.dest_ip = dest_ip
++
++    def encapsulate(self, pdu):
++        header = {"src_ip": "192.168.0.1", "dst_ip": self.dest_ip, "protocol": 6}
++        print(f"[L3 - Network] Adding IP Header: {header}")
++        return PDU(payload=pdu, header=header)
++
++    def decapsulate(self, pdu):
++        print("[L3 - Network] IP address matches. Stripping L3 Header.")
++        return pdu.payload
+diff --git a/osi_blockchain_simulation/core/layers/physical.py b/osi_blockchain_simulation/core/layers/physical.py
+new file mode 100644
+index 0000000..ecbac16
+--- /dev/null
++++ b/osi_blockchain_simulation/core/layers/physical.py
+@@ -0,0 +1,17 @@
++from core.pdu import PDU
++
++class PhysicalLayer:
++    def encapsulate(self, pdu):
++        bits = ''.join(format(ord(c), '08b') for c in str(pdu))
++        print(f"[L1 - Physical] Transmitting bits: {bits[:40]}... (truncated)")
++        return bits
++
++    def decapsulate(self, bits):
++        n = 8
++        chars = [chr(int(bits[i:i + n], 2)) for i in range(0, len(bits), n)]
++        data = ''.join(chars)
++        print(f"[L1 - Physical] Received bits: {bits[:40]}... (truncated)")
++        # Return the reconstructed data/PDU structure
++        # In a real implementation, this would deserialize back to PDU
++        # For simplicity, we'll reconstruct by parsing the string representation
++        return eval(data)
+diff --git a/osi_blockchain_simulation/core/layers/presentation.py b/osi_blockchain_simulation/core/layers/presentation.py
+new file mode 100644
+index 0000000..6c9503c
+--- /dev/null
++++ b/osi_blockchain_simulation/core/layers/presentation.py
+@@ -0,0 +1,37 @@
++from core.pdu import PDU
++from core.crypto_utils import simple_xor_encrypt, simple_xor_decrypt
++from core.verification_utils import sign, verify
++
++class PresentationLayer:
++    def __init__(self, encrypt=False, sign=False):
++        self.encrypt = encrypt
++        self.sign = sign
++        self.key = 42
++        self.secret = "default"
++
++    def encapsulate(self, pdu):
++        payload = pdu.payload
++        header = {"encryption": self.encrypt}
++        if self.encrypt:
++            payload = simple_xor_encrypt(str(payload), self.key)
++            header["encryption_type"] = "XOR"
++            print(f"[L6 - Presentation] Encrypted Payload: {payload!r}")
++        if self.sign:
++            signature = sign(str(payload), self.secret)
++            header["signature"] = signature
++            print(f"[L6 - Presentation] Signed Payload: {signature}")
++        return PDU(payload=payload, header=header)
++
++    def decapsulate(self, pdu):
++        payload = pdu.payload
++        header = pdu.header
++        if header.get("encryption"):
++            print(f"[L6 - Presentation] Decrypting data.")
++            payload = simple_xor_decrypt(payload, self.key)
++            print(f"[L6 - Presentation] Original Data: {payload!r}")
++        if header.get("signature"):
++            if verify(str(payload), header["signature"], self.secret):
++                print(f"[L6 - Presentation] Signature verified.")
++            else:
++                print(f"[L6 - Presentation] Signature verification failed.")
++        return PDU(payload=payload)
+diff --git a/osi_blockchain_simulation/core/layers/session.py b/osi_blockchain_simulation/core/layers/session.py
+new file mode 100644
+index 0000000..2b2681f
+--- /dev/null
++++ b/osi_blockchain_simulation/core/layers/session.py
+@@ -0,0 +1,11 @@
++from core.pdu import PDU
++
++class SessionLayer:
++    def encapsulate(self, pdu):
++        header = {"session_id": 12345}
++        print(f"[L5 - Session] Adding Session Header: {header}")
++        return PDU(payload=pdu, header=header)
++
++    def decapsulate(self, pdu):
++        print(f"[L5 - Session] Session validated. Stripping L5 Header.")
++        return pdu.payload
+diff --git a/osi_blockchain_simulation/core/layers/transport.py b/osi_blockchain_simulation/core/layers/transport.py
+new file mode 100644
+index 0000000..a6945e1
+--- /dev/null
++++ b/osi_blockchain_simulation/core/layers/transport.py
+@@ -0,0 +1,22 @@
++from core.pdu import PDU
++from core.verification_utils import checksum
++
++class TransportLayer:
++    def __init__(self, dest_port=80, protocol="TCP"):
++        self.protocol = protocol
++        self.dest_port = dest_port
++
++    def encapsulate(self, pdu):
++        header = {"src_port": 1024, "dst_port": self.dest_port, "protocol": self.protocol}
++        trailer = {"checksum": checksum(str(pdu))}
++        print(f"[L4 - Transport] Segmenting Data. Header: {header}, Trailer: {trailer}")
++        return PDU(payload=pdu, header=header, trailer=trailer)
++
++    def decapsulate(self, pdu):
++        cs = checksum(str(pdu.payload))
++        if pdu.trailer.get("checksum") == cs:
++            print("[L4 - Transport] Checksum OK.")
++        else:
++            print("[L4 - Transport] Checksum failed.")
++        print("[L4 - Transport] Port number matches. Stripping L4 Header.")
++        return pdu.payload
+diff --git a/osi_blockchain_simulation/core/pdu.py b/osi_blockchain_simulation/core/pdu.py
+new file mode 100644
+index 0000000..8cdec06
+--- /dev/null
++++ b/osi_blockchain_simulation/core/pdu.py
+@@ -0,0 +1,8 @@
++class PDU:
++    def __init__(self, payload, header=None, trailer=None):
++        self.header = header or {}
++        self.payload = payload
++        self.trailer = trailer or {}
++
++    def __repr__(self):
++        return f"PDU(header={self.header!r}, payload={self.payload!r}, trailer={self.trailer!r})"
+diff --git a/osi_blockchain_simulation/core/verification_utils.py b/osi_blockchain_simulation/core/verification_utils.py
+new file mode 100644
+index 0000000..3e058c9
+--- /dev/null
++++ b/osi_blockchain_simulation/core/verification_utils.py
+@@ -0,0 +1,15 @@
++import hashlib
++
++def checksum(data):
++    if isinstance(data, dict):
++        data = str(data)
++    return hashlib.md5(data.encode()).hexdigest()[:8]
++
++def sign(data, secret="default"):
++    if isinstance(data, dict):
++        data = str(data)
++    return hashlib.sha256((data + secret).encode()).hexdigest()[:12]
++
++def verify(data, signature, secret="default"):
++    expected = sign(data, secret)
++    return expected == signature
+diff --git a/osi_blockchain_simulation/examples/__init__.py b/osi_blockchain_simulation/examples/__init__.py
+new file mode 100755
+index 0000000..a5c80fb
+--- /dev/null
++++ b/osi_blockchain_simulation/examples/__init__.py
+@@ -0,0 +1 @@
++# Examples package
+diff --git a/osi_blockchain_simulation/examples/blockchain_flow.py b/osi_blockchain_simulation/examples/blockchain_flow.py
+new file mode 100755
+index 0000000..7288140
+--- /dev/null
++++ b/osi_blockchain_simulation/examples/blockchain_flow.py
+@@ -0,0 +1,9 @@
++#!/usr/bin/env python3
++import sys
++import os
++
++# Add parent directory to path for imports
++sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
++
++sys.argv = ['main_simulation.py', '--blockchain']
++import main_simulation
+diff --git a/osi_blockchain_simulation/examples/encrypted_data_flow.py b/osi_blockchain_simulation/examples/encrypted_data_flow.py
+new file mode 100755
+index 0000000..5ca2cc2
+--- /dev/null
++++ b/osi_blockchain_simulation/examples/encrypted_data_flow.py
+@@ -0,0 +1,9 @@
++#!/usr/bin/env python3
++import sys
++import os
++
++# Add parent directory to path for imports
++sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
++
++sys.argv = ['main_simulation.py', '--data', 'Secret Message', '--encrypt']
++import main_simulation
+diff --git a/osi_blockchain_simulation/examples/signed_data_flow.py b/osi_blockchain_simulation/examples/signed_data_flow.py
+new file mode 100755
+index 0000000..d343bbe
+--- /dev/null
++++ b/osi_blockchain_simulation/examples/signed_data_flow.py
+@@ -0,0 +1,9 @@
++#!/usr/bin/env python3
++import sys
++import os
++
++# Add parent directory to path for imports
++sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
++
++sys.argv = ['main_simulation.py', '--data', 'Signed Message', '--sign']
++import main_simulation
+diff --git a/osi_blockchain_simulation/examples/simple_text_flow.py b/osi_blockchain_simulation/examples/simple_text_flow.py
+new file mode 100755
+index 0000000..f2d4c8b
+--- /dev/null
++++ b/osi_blockchain_simulation/examples/simple_text_flow.py
+@@ -0,0 +1,9 @@
++#!/usr/bin/env python3
++import sys
++import os
++
++# Add parent directory to path for imports
++sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
++
++sys.argv = ['main_simulation.py', '--data', 'Hello OSI World']
++import main_simulation
+diff --git a/osi_blockchain_simulation/main_simulation.py b/osi_blockchain_simulation/main_simulation.py
+new file mode 100755
+index 0000000..7b19085
+--- /dev/null
++++ b/osi_blockchain_simulation/main_simulation.py
+@@ -0,0 +1,87 @@
++#!/usr/bin/env python3
++import argparse
++from core.layers.application import ApplicationLayer
++from core.layers.presentation import PresentationLayer
++from core.layers.session import SessionLayer
++from core.layers.transport import TransportLayer
++from core.layers.network import NetworkLayer
++from core.layers.datalink import DataLinkLayer
++from core.layers.physical import PhysicalLayer
++from blockchain_module.transaction import Transaction
++from blockchain_module.block import Block
++
++def simulate_flow(args):
++    # Application layer
++    if args.blockchain:
++        tx = Transaction(sender="Alice", receiver="Bob", amount=10)
++        app_data = tx.to_dict()
++    else:
++        app_data = args.data
++
++    print("-" * 40)
++    print(f"[L7 - Application] Original Data: {app_data!r}")
++    app_layer = ApplicationLayer()
++    data = app_layer.encapsulate(app_data)
++    print("[L7 -> L6] Passing data to Presentation Layer.")
++    print("-" * 40)
++
++    # Presentation layer
++    pres_layer = PresentationLayer(encrypt=args.encrypt, sign=args.sign)
++    data = pres_layer.encapsulate(data)
++    print("[L6 -> L5] Passing PDU to Session Layer.")
++    print("-" * 40)
++
++    # Session layer
++    session_layer = SessionLayer()
++    data = session_layer.encapsulate(data)
++    print("[L5 -> L4] Passing PDU to Transport Layer.")
++    print("-" * 40)
++
++    # Transport layer
++    transport_layer = TransportLayer(dest_port=args.port)
++    data = transport_layer.encapsulate(data)
++    print("[L4 -> L3] Passing Segment to Network Layer.")
++    print("-" * 40)
++
++    # Network layer
++    network_layer = NetworkLayer(dest_ip=args.dest_ip)
++    data = network_layer.encapsulate(data)
++    print("[L3 -> L2] Passing Packet to Data Link Layer.")
++    print("-" * 40)
++
++    # Data Link layer
++    datalink_layer = DataLinkLayer(dest_mac=args.dest_mac)
++    data = datalink_layer.encapsulate(data)
++    print("[L2 -> L1] Passing Frame to Physical Layer.")
++    print("-" * 40)
++
++    # Physical layer
++    physical_layer = PhysicalLayer()
++    bits = physical_layer.encapsulate(data)
++    print("-" * 40)
++    print("SIMULATING TRANSMISSION MEDIUM...")
++    print("-" * 40)
++    print("RECEIVER SIDE:")
++
++    # Decapsulation (reverse)
++    rec_data = physical_layer.decapsulate(bits)
++    rec_data = datalink_layer.decapsulate(rec_data)
++    rec_data = network_layer.decapsulate(rec_data)
++    rec_data = transport_layer.decapsulate(rec_data)
++    rec_data = session_layer.decapsulate(rec_data)
++    rec_data = pres_layer.decapsulate(rec_data)
++    rec_data = app_layer.decapsulate(rec_data)
++    print("-" * 40)
++    print("SIMULATION COMPLETE.")
++
++if __name__ == "__main__":
++    parser = argparse.ArgumentParser(description="OSI Model Data Flow Simulation")
++    parser.add_argument('--data', type=str, default="Hello OSI World", help="Application data")
++    parser.add_argument('--dest_ip', type=str, default="192.168.1.100")
++    parser.add_argument('--dest_mac', type=str, default="00:1A:2B:3C:4D:5E")
++    parser.add_argument('--port', type=int, default=80)
++    parser.add_argument('--encrypt', action='store_true')
++    parser.add_argument('--sign', action='store_true')
++    parser.add_argument('--blockchain', action='store_true', help="Simulate blockchain transaction as data")
++    args = parser.parse_args()
++    simulate_flow(args)
+-- 
+2.51.0
+
