@@ -1,0 +1,55 @@
+name: Copilot Agent Example
+
+# This workflow demonstrates proper configuration for GitHub Copilot agents
+# to avoid authentication errors and branch reference issues
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize]
+
+# Environment variables for authentication
+env:
+  # Use GitHub token with appropriate scopes (repo, workflow)
+  COPILOT_TOKEN: ${{ secrets.COPILOT_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  copilot-agent:
+    runs-on: ubuntu-latest
+    
+    # Explicitly set permissions for GITHUB_TOKEN (security best practice)
+    permissions:
+      contents: read  # Required to checkout code
+      pull-requests: read  # Required to read PR information
+    
+    steps:
+      # CRITICAL: Use fetch-depth: 0 to fetch all branches and history
+      # This ensures the 'main' branch is available for comparisons
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all branches and history
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      # Verify that main branch is accessible
+      - name: Verify main branch exists
+        run: |
+          git fetch origin main:refs/remotes/origin/main || echo "Main branch fetch failed"
+          git branch -a
+          git rev-parse refs/heads/main || git rev-parse origin/main || echo "Main branch not found"
+      
+      # Example: Run a simple command that requires access to main branch
+      - name: Compare with main branch
+        run: |
+          # This command would previously fail without fetch-depth: 0
+          git diff origin/main HEAD || echo "Diff with main branch failed"
+      
+      # Additional steps would go here
+      # For Copilot API calls, ensure COPILOT_TOKEN is set with proper scopes
+      - name: Example Copilot API interaction
+        if: env.COPILOT_TOKEN != ''
+        run: |
+          echo "COPILOT_TOKEN is configured"
+          # Your Copilot API calls would go here
+          # Ensure the token has 'repo' and 'workflow' scopes

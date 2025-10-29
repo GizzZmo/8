@@ -1,0 +1,49 @@
+# Temporary files
+*.tmp
+*.log
+*.swp
+*.swo
+*~
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node modules (if any)
+node_modules/
+
+# Build artifacts
+dist/
+build/
+*.o
+*.exe
+
+# Secrets and credentials (NEVER commit these)
+.env
+.env.local
+secrets/
+*.key
+*.pem
+token.txt
+credentials.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+venv/
+ENV/
+
+# Rust
+target/
+Cargo.lock
+
+# C++
+*.out
+*.a

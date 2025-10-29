@@ -73,6 +73,24 @@ This system is structured based on the **OSI model**, ensuring modular communica
 
 ---
 
+## **GitHub Workflow Configuration**
+
+This repository includes GitHub Actions workflow configuration to ensure proper integration with GitHub Copilot and CI/CD pipelines.
+
+### **Important Documentation**
+- 📄 **[COPILOT_AUTHENTICATION_FIX.md](COPILOT_AUTHENTICATION_FIX.md)** - Comprehensive guide for fixing authentication errors and branch reference issues
+- ⚙️ **[.github/workflows/copilot-agent-example.yml](.github/workflows/copilot-agent-example.yml)** - Example workflow with proper authentication and branch fetching configuration
+
+### **Key Fixes Implemented**
+- ✅ **Authentication Configuration**: Proper setup of `COPILOT_TOKEN` and `GITHUB_TOKEN` environment variables
+- ✅ **Branch Fetching**: Use of `fetch-depth: 0` to ensure all branches are available for git operations
+- ✅ **Token Scopes**: Documentation of required token permissions (`repo`, `workflow`)
+- ✅ **Security**: `.gitignore` configuration to prevent accidental commit of secrets
+
+For detailed troubleshooting and setup instructions, see [COPILOT_AUTHENTICATION_FIX.md](COPILOT_AUTHENTICATION_FIX.md).
+
+---
+
 Would you like me to **generate implementation code** for specific layers or modules? 🚀  
 This setup ensures **seamless real-time fractal evolution** across multiple programming languages! 🔥  
 Let me know if you need any fine-tuning before deployment! ⚡  
