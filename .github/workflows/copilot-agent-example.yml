@@ -18,6 +18,11 @@ jobs:
   copilot-agent:
     runs-on: ubuntu-latest
     
+    # Explicitly set permissions for GITHUB_TOKEN (security best practice)
+    permissions:
+      contents: read  # Required to checkout code
+      pull-requests: read  # Required to read PR information
+    
     steps:
       # CRITICAL: Use fetch-depth: 0 to fetch all branches and history
       # This ensures the 'main' branch is available for comparisons
