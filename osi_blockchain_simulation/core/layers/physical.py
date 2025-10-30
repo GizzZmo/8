@@ -1,5 +1,3 @@
-from core.pdu import PDU
-
 class PhysicalLayer:
     def encapsulate(self, pdu):
         bits = ''.join(format(ord(c), '08b') for c in str(pdu))
