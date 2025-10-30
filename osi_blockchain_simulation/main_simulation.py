@@ -8,7 +8,6 @@ from core.layers.network import NetworkLayer
 from core.layers.datalink import DataLinkLayer
 from core.layers.physical import PhysicalLayer
 from blockchain_module.transaction import Transaction
-from blockchain_module.block import Block
 
 def simulate_flow(args):
     # Application layer
