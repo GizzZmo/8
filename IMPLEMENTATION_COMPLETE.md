@@ -1,7 +1,7 @@
 # OSI Simulation Implementation Summary
 
 ## Overview
-This document summarizes the complete implementation of the OSI (Open Systems Interconnection) model blockchain simulation as requested in the problem statement: "create iso-simulation and push to main branch and make a patch for local deployment"
+This document summarizes the complete implementation of the OSI (Open Systems Interconnection) model blockchain simulation as requested in the problem statement: "create iso-simulation [sic] and push to main branch and make a patch for local deployment" (note: 'iso-simulation' is a typo; it should be 'OSI-simulation')
 
 ## What Was Implemented
 
