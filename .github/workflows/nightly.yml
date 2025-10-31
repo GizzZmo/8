@@ -1,0 +1,129 @@
+name: Nightly - Build and Test
+
+on:
+  schedule:
+    # Run at 2 AM UTC every day
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  comprehensive-test:
+    name: Comprehensive Testing
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov
+      
+      - name: Run all tests (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          chmod +x test_all_scenarios.sh
+          ./test_all_scenarios.sh
+      
+      - name: Run all tests (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          cd osi_blockchain_simulation
+          python main_simulation.py --data "Test"
+          python main_simulation.py --data "Encrypted" --encrypt
+          python main_simulation.py --data "Signed" --sign
+          python main_simulation.py --blockchain
+      
+      - name: Test all example flows
+        run: |
+          cd osi_blockchain_simulation/examples
+          python simple_text_flow.py
+          python blockchain_flow.py
+          python encrypted_data_flow.py
+          python signed_data_flow.py
+      
+      - name: Test main simulation with various inputs
+        run: |
+          cd osi_blockchain_simulation
+          python main_simulation.py --data "Short"
+          python main_simulation.py --data "A much longer test message with special characters: !@#$%^&*()"
+          python main_simulation.py --data "Unicode test: 你好世界 🌍"
+          python main_simulation.py --blockchain --encrypt
+          python main_simulation.py --blockchain --sign
+          python main_simulation.py --blockchain --encrypt --sign
+
+  build-artifacts:
+    name: Nightly Build Artifacts
+    runs-on: ubuntu-latest
+    needs: comprehensive-test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Get current date
+        id: date
+        run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+      
+      - name: Build nightly package
+        run: |
+          mkdir -p nightly/osi-blockchain-simulation-nightly-${{ steps.date.outputs.DATE }}
+          cp -r osi_blockchain_simulation nightly/osi-blockchain-simulation-nightly-${{ steps.date.outputs.DATE }}/
+          cp test_all_scenarios.sh nightly/osi-blockchain-simulation-nightly-${{ steps.date.outputs.DATE }}/
+          cp readme.md nightly/osi-blockchain-simulation-nightly-${{ steps.date.outputs.DATE }}/
+          cp LICENSE nightly/osi-blockchain-simulation-nightly-${{ steps.date.outputs.DATE }}/
+          
+          # Create nightly info
+          echo "OSI Blockchain Simulation - Nightly Build" > nightly/osi-blockchain-simulation-nightly-${{ steps.date.outputs.DATE }}/NIGHTLY_INFO.txt
+          echo "Build Date: $(date -u)" >> nightly/osi-blockchain-simulation-nightly-${{ steps.date.outputs.DATE }}/NIGHTLY_INFO.txt
+          echo "Git Commit: $(git rev-parse HEAD)" >> nightly/osi-blockchain-simulation-nightly-${{ steps.date.outputs.DATE }}/NIGHTLY_INFO.txt
+          echo "Git Branch: $(git rev-parse --abbrev-ref HEAD)" >> nightly/osi-blockchain-simulation-nightly-${{ steps.date.outputs.DATE }}/NIGHTLY_INFO.txt
+          
+          cd nightly
+          tar -czf osi-blockchain-simulation-nightly-${{ steps.date.outputs.DATE }}.tar.gz osi-blockchain-simulation-nightly-${{ steps.date.outputs.DATE }}/
+          zip -r osi-blockchain-simulation-nightly-${{ steps.date.outputs.DATE }}.zip osi-blockchain-simulation-nightly-${{ steps.date.outputs.DATE }}/
+      
+      - name: Upload nightly artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-build-${{ steps.date.outputs.DATE }}
+          path: |
+            nightly/*.tar.gz
+            nightly/*.zip
+          retention-days: 7
+
+  report:
+    name: Build Report
+    runs-on: ubuntu-latest
+    needs: [comprehensive-test, build-artifacts]
+    if: always()
+    
+    steps:
+      - name: Generate report
+        run: |
+          echo "=== Nightly Build Report ==="
+          echo "Date: $(date -u)"
+          echo "Status: ${{ needs.comprehensive-test.result }}"
+          echo "Artifacts: ${{ needs.build-artifacts.result }}"
+          echo ""
+          echo "All tests completed!"

@@ -74,7 +74,8 @@ def simulate_flow(args):
     print("-" * 40)
     print("SIMULATION COMPLETE.")
 
-if __name__ == "__main__":
+def main():
+    """Main entry point for the simulation."""
     parser = argparse.ArgumentParser(description="OSI Model Data Flow Simulation")
     parser.add_argument('--data', type=str, default="Hello OSI World", help="Application data")
     parser.add_argument('--dest_ip', type=str, default="192.168.1.100")
@@ -85,3 +86,6 @@ if __name__ == "__main__":
     parser.add_argument('--blockchain', action='store_true', help="Simulate blockchain transaction as data")
     args = parser.parse_args()
     simulate_flow(args)
+
+if __name__ == "__main__":
+    main()

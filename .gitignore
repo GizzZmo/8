@@ -22,6 +22,11 @@ dist/
 build/
 *.o
 *.exe
+*.egg-info/
+.eggs/
+release/
+nightly/
+_site/
 
 # Secrets and credentials (NEVER commit these)
 .env
@@ -39,6 +44,9 @@ __pycache__/
 .Python
 venv/
 ENV/
+.pytest_cache/
+.coverage
+htmlcov/
 
 # Rust
 target/
