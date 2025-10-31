@@ -70,7 +70,6 @@ def simulate_flow(args):
     rec_data = session_layer.decapsulate(rec_data)
     rec_data = pres_layer.decapsulate(rec_data)
     rec_data = app_layer.decapsulate(rec_data)
-    print(f"[L7 - Application] Decapsulated Data Received: {rec_data!r}")
     print("-" * 40)
     print("SIMULATION COMPLETE.")
 
