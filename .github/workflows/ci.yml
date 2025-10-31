@@ -177,20 +177,16 @@ jobs:
       - name: Prepare documentation
         run: |
           mkdir -p dist/docs
-          cp readme.md dist/docs/
-          cp main.md dist/docs/
-          cp osi_model.md dist/docs/
-          cp osi_flow_sim.md dist/docs/
-          cp roadmap.md dist/docs/
-          cp todo.md dist/docs/
-          cp QUICKSTART.md dist/docs/
-          cp DEPLOYMENT_GUIDE.md dist/docs/
-          cp IMPLEMENTATION_SUMMARY.md dist/docs/
-          cp IMPLEMENTATION_COMPLETE.md dist/docs/
-          cp FIX_CHECKLIST.md dist/docs/
-          cp SETUP_SECRETS_GUIDE.md dist/docs/
-          cp COPILOT_AUTHENTICATION_FIX.md dist/docs/
-          cp LICENSE dist/docs/
+          # Copy files if they exist
+          for file in readme.md main.md osi_model.md osi_flow_sim.md roadmap.md todo.md \
+                      QUICKSTART.md DEPLOYMENT_GUIDE.md IMPLEMENTATION_SUMMARY.md \
+                      IMPLEMENTATION_COMPLETE.md FIX_CHECKLIST.md SETUP_SECRETS_GUIDE.md \
+                      COPILOT_AUTHENTICATION_FIX.md BUILD_GUIDE.md CI_CD_DOCUMENTATION.md \
+                      CI_CD_QUICK_REFERENCE.md LICENSE; do
+            if [ -f "$file" ]; then
+              cp "$file" dist/docs/
+            fi
+          done
           
           # Create docs info
           echo "Documentation Build" > dist/docs/BUILD_INFO.txt

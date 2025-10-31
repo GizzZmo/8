@@ -34,14 +34,14 @@ jobs:
       - name: Build site
         run: |
           mkdir -p _site
-          cp index.html _site/
-          cp readme.md _site/
-          cp main.md _site/
-          cp osi_model.md _site/
-          cp osi_flow_sim.md _site/
-          cp roadmap.md _site/
-          cp QUICKSTART.md _site/
-          cp LICENSE _site/
+          # Copy files if they exist
+          for file in index.html readme.md main.md osi_model.md osi_flow_sim.md \
+                      roadmap.md QUICKSTART.md BUILD_GUIDE.md CI_CD_DOCUMENTATION.md \
+                      CI_CD_QUICK_REFERENCE.md LICENSE; do
+            if [ -f "$file" ]; then
+              cp "$file" _site/
+            fi
+          done
           
           # Create a simple index redirect if needed
           cat > _site/README.md << 'EOF'
@@ -51,6 +51,9 @@ jobs:
           
           ## Documentation
           - [Quick Start Guide](./QUICKSTART.md)
+          - [Build Guide](./BUILD_GUIDE.md)
+          - [CI/CD Documentation](./CI_CD_DOCUMENTATION.md)
+          - [CI/CD Quick Reference](./CI_CD_QUICK_REFERENCE.md)
           - [OSI Model Reference](./osi_model.md)
           - [Main Documentation](./main.md)
           - [Roadmap](./roadmap.md)

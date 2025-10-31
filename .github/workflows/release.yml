@@ -83,14 +83,14 @@ jobs:
       - name: Build complete documentation
         run: |
           mkdir -p release/docs-${{ steps.get_version.outputs.VERSION }}
-          cp readme.md release/docs-${{ steps.get_version.outputs.VERSION }}/
-          cp main.md release/docs-${{ steps.get_version.outputs.VERSION }}/
-          cp osi_model.md release/docs-${{ steps.get_version.outputs.VERSION }}/
-          cp osi_flow_sim.md release/docs-${{ steps.get_version.outputs.VERSION }}/
-          cp roadmap.md release/docs-${{ steps.get_version.outputs.VERSION }}/
-          cp QUICKSTART.md release/docs-${{ steps.get_version.outputs.VERSION }}/
-          cp DEPLOYMENT_GUIDE.md release/docs-${{ steps.get_version.outputs.VERSION }}/
-          cp LICENSE release/docs-${{ steps.get_version.outputs.VERSION }}/
+          # Copy files if they exist
+          for file in readme.md main.md osi_model.md osi_flow_sim.md roadmap.md \
+                      QUICKSTART.md DEPLOYMENT_GUIDE.md BUILD_GUIDE.md \
+                      CI_CD_DOCUMENTATION.md CI_CD_QUICK_REFERENCE.md LICENSE; do
+            if [ -f "$file" ]; then
+              cp "$file" release/docs-${{ steps.get_version.outputs.VERSION }}/
+            fi
+          done
           
           cd release
           tar -czf docs-${{ steps.get_version.outputs.VERSION }}.tar.gz docs-${{ steps.get_version.outputs.VERSION }}/
