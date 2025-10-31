@@ -1,0 +1,183 @@
+name: Release - Create Artifacts
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        default: 'v0.1.0'
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Get version
+        id: get_version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Run tests before release
+        run: |
+          chmod +x test_all_scenarios.sh
+          ./test_all_scenarios.sh
+      
+      - name: Build Python package
+        run: |
+          mkdir -p release/osi-blockchain-simulation-${{ steps.get_version.outputs.VERSION }}
+          cp -r osi_blockchain_simulation release/osi-blockchain-simulation-${{ steps.get_version.outputs.VERSION }}/
+          cp test_all_scenarios.sh release/osi-blockchain-simulation-${{ steps.get_version.outputs.VERSION }}/
+          cp readme.md release/osi-blockchain-simulation-${{ steps.get_version.outputs.VERSION }}/
+          cp LICENSE release/osi-blockchain-simulation-${{ steps.get_version.outputs.VERSION }}/
+          cp QUICKSTART.md release/osi-blockchain-simulation-${{ steps.get_version.outputs.VERSION }}/
+          
+          # Create release info
+          echo "OSI Blockchain Simulation" > release/osi-blockchain-simulation-${{ steps.get_version.outputs.VERSION }}/RELEASE_INFO.txt
+          echo "Version: ${{ steps.get_version.outputs.VERSION }}" >> release/osi-blockchain-simulation-${{ steps.get_version.outputs.VERSION }}/RELEASE_INFO.txt
+          echo "Release Date: $(date -u)" >> release/osi-blockchain-simulation-${{ steps.get_version.outputs.VERSION }}/RELEASE_INFO.txt
+          echo "Git Commit: $(git rev-parse HEAD)" >> release/osi-blockchain-simulation-${{ steps.get_version.outputs.VERSION }}/RELEASE_INFO.txt
+          
+          # Create archives
+          cd release
+          tar -czf osi-blockchain-simulation-${{ steps.get_version.outputs.VERSION }}.tar.gz osi-blockchain-simulation-${{ steps.get_version.outputs.VERSION }}/
+          zip -r osi-blockchain-simulation-${{ steps.get_version.outputs.VERSION }}.zip osi-blockchain-simulation-${{ steps.get_version.outputs.VERSION }}/
+      
+      - name: Build web assets
+        run: |
+          mkdir -p release/web-assets-${{ steps.get_version.outputs.VERSION }}
+          cp index.html release/web-assets-${{ steps.get_version.outputs.VERSION }}/
+          cp readme.md release/web-assets-${{ steps.get_version.outputs.VERSION }}/
+          cp main.md release/web-assets-${{ steps.get_version.outputs.VERSION }}/
+          cp osi_model.md release/web-assets-${{ steps.get_version.outputs.VERSION }}/
+          
+          # Create web asset info
+          echo "Web Assets" > release/web-assets-${{ steps.get_version.outputs.VERSION }}/RELEASE_INFO.txt
+          echo "Version: ${{ steps.get_version.outputs.VERSION }}" >> release/web-assets-${{ steps.get_version.outputs.VERSION }}/RELEASE_INFO.txt
+          echo "Release Date: $(date -u)" >> release/web-assets-${{ steps.get_version.outputs.VERSION }}/RELEASE_INFO.txt
+          
+          cd release
+          tar -czf web-assets-${{ steps.get_version.outputs.VERSION }}.tar.gz web-assets-${{ steps.get_version.outputs.VERSION }}/
+          zip -r web-assets-${{ steps.get_version.outputs.VERSION }}.zip web-assets-${{ steps.get_version.outputs.VERSION }}/
+      
+      - name: Build complete documentation
+        run: |
+          mkdir -p release/docs-${{ steps.get_version.outputs.VERSION }}
+          # Copy files if they exist
+          for file in readme.md main.md osi_model.md osi_flow_sim.md roadmap.md \
+                      QUICKSTART.md DEPLOYMENT_GUIDE.md BUILD_GUIDE.md \
+                      CI_CD_DOCUMENTATION.md CI_CD_QUICK_REFERENCE.md LICENSE; do
+            if [ -f "$file" ]; then
+              cp "$file" release/docs-${{ steps.get_version.outputs.VERSION }}/
+            fi
+          done
+          
+          cd release
+          tar -czf docs-${{ steps.get_version.outputs.VERSION }}.tar.gz docs-${{ steps.get_version.outputs.VERSION }}/
+          zip -r docs-${{ steps.get_version.outputs.VERSION }}.zip docs-${{ steps.get_version.outputs.VERSION }}/
+      
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          cat > release/RELEASE_NOTES.md << 'EOF'
+          # OSI Blockchain Simulation ${{ steps.get_version.outputs.VERSION }}
+          
+          ## What's Included
+          
+          This release includes:
+          
+          ### Python Package
+          - Complete OSI model simulation implementation
+          - Blockchain transaction support
+          - Encryption and signing capabilities
+          - All 7 OSI layers implemented
+          - Example flows and test scenarios
+          
+          ### Web Assets
+          - Interactive web interface (index.html)
+          - Documentation and guides
+          - OSI model visualizations
+          
+          ### Documentation
+          - Complete user guides
+          - Quick start guide
+          - Deployment guide
+          - OSI model reference
+          - API documentation
+          
+          ## Installation
+          
+          ### Python Package
+          ```bash
+          # Extract the archive
+          tar -xzf osi-blockchain-simulation-${{ steps.get_version.outputs.VERSION }}.tar.gz
+          cd osi-blockchain-simulation-${{ steps.get_version.outputs.VERSION }}
+          
+          # Run tests
+          ./test_all_scenarios.sh
+          
+          # Run simulation
+          cd osi_blockchain_simulation
+          python main_simulation.py --help
+          ```
+          
+          ### Web Interface
+          ```bash
+          # Extract web assets
+          tar -xzf web-assets-${{ steps.get_version.outputs.VERSION }}.tar.gz
+          cd web-assets-${{ steps.get_version.outputs.VERSION }}
+          
+          # Open index.html in your browser
+          ```
+          
+          ## Requirements
+          - Python 3.9 or higher
+          - Modern web browser for web interface
+          
+          ## What's Changed
+          - Full CI/CD pipeline implementation
+          - Automated artifact building
+          - Comprehensive test coverage
+          - Documentation improvements
+          
+          EOF
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            release/*.tar.gz
+            release/*.zip
+          body_path: release/RELEASE_NOTES.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Upload Release Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ steps.get_version.outputs.VERSION }}
+          path: release/
+          retention-days: 90

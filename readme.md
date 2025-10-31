@@ -1,4 +1,28 @@
-🚀 I'll create a **complete system** that integrates **multi-language support**, adhering to the **OSI model** for structured network communication.  
+# OSI Blockchain Simulation
+
+[![CI - Build and Test](https://github.com/GizzZmo/8/actions/workflows/ci.yml/badge.svg)](https://github.com/GizzZmo/8/actions/workflows/ci.yml)
+[![Deploy - GitHub Pages](https://github.com/GizzZmo/8/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/GizzZmo/8/actions/workflows/deploy-pages.yml)
+[![Nightly - Build and Test](https://github.com/GizzZmo/8/actions/workflows/nightly.yml/badge.svg)](https://github.com/GizzZmo/8/actions/workflows/nightly.yml)
+
+🚀 A **complete system** that integrates **multi-language support**, adhering to the **OSI model** for structured network communication.
+
+## CI/CD Pipeline
+
+This project includes a comprehensive CI/CD pipeline that automatically builds, tests, and packages artifacts:
+
+- **Continuous Integration**: Automated testing on every push and pull request
+- **Artifact Building**: Automatic creation of distributable packages
+- **Web Asset Deployment**: GitHub Pages deployment for documentation
+- **Nightly Builds**: Regular comprehensive testing across multiple platforms
+- **Release Management**: Automated release artifact creation
+
+### Available Artifacts
+
+The CI system produces the following artifacts:
+- **Python Package**: Complete OSI simulation with all layers and examples
+- **Web Assets**: Interactive web interface and documentation
+- **Documentation**: Comprehensive guides and references
+- **Release Archives**: Versioned TAR.GZ and ZIP packages
 
 ### **System Overview**
 - 🌍 **Multi-Language Support** (Python, JavaScript, C++, Rust)
