@@ -1,4 +1,5 @@
 ---
+
 name: OSI Blockchain Expert
 description: Specialized agent for OSI model simulation and blockchain integration projects
 ---
@@ -63,3 +64,4 @@ When working on tasks in this repository, this agent can help with:
 - `osi_flow_sim.md` - Data flow simulation details
 - `BUILD_GUIDE.md` - Build and setup instructions
 - `CI_CD_DOCUMENTATION.md` - CI/CD pipeline documentation
+
