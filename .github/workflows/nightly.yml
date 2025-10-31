@@ -10,6 +10,8 @@ jobs:
   comprehensive-test:
     name: Comprehensive Testing
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
@@ -69,6 +71,8 @@ jobs:
     name: Nightly Build Artifacts
     runs-on: ubuntu-latest
     needs: comprehensive-test
+    permissions:
+      contents: read
     
     steps:
       - name: Checkout code
@@ -117,6 +121,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [comprehensive-test, build-artifacts]
     if: always()
+    permissions: {}  # No permissions needed for this job
     
     steps:
       - name: Generate report
