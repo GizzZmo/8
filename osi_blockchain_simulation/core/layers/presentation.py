@@ -25,13 +25,18 @@ class PresentationLayer:
     def decapsulate(self, pdu):
         payload = pdu.payload
         header = pdu.header
-        if header.get("encryption"):
-            print(f"[L6 - Presentation] Decrypting data.")
-            payload = simple_xor_decrypt(payload, self.key)
-            print(f"[L6 - Presentation] Original Data: {payload!r}")
+        
+        # Verify signature BEFORE decryption (signature was computed on encrypted data)
         if header.get("signature"):
             if verify(str(payload), header["signature"], self.secret):
                 print(f"[L6 - Presentation] Signature verified.")
             else:
                 print(f"[L6 - Presentation] Signature verification failed.")
+        
+        # Then decrypt if needed
+        if header.get("encryption"):
+            print(f"[L6 - Presentation] Decrypting data.")
+            payload = simple_xor_decrypt(payload, self.key)
+            print(f"[L6 - Presentation] Original Data: {payload!r}")
+        
         return PDU(payload=payload)
